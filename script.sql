@@ -5,7 +5,8 @@
 CREATE TABLE IF NOT EXISTS usuario(
     id_usuario SERIAL PRIMARY KEY NOT NULL,
     nome VARCHAR(200) NOT NULL,
-    contato VARCHAR(12) NOT NULL
+    contato VARCHAR(12) NOT NULL,
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS cartao(
@@ -14,19 +15,22 @@ CREATE TABLE IF NOT EXISTS cartao(
     codigo VARCHAR(3) NOT NULL,
     bandeira VARCHAR(50) NOT NULL,
     fk_usuario INT NOT NULL,
+    deletado_em DATE,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
 );
 
 CREATE TABLE IF NOT EXISTS loja(
     id_loja SERIAL PRIMARY KEY NOT NULL,
     nome VARCHAR(50) NOT NULL,
-    descricao VARCHAR(500) NOT NULL
+    descricao VARCHAR(500) NOT NULL,
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS entregador(
   id_entregador SERIAL PRIMARY KEY NOT NULL,
   nome VARCHAR(50) NOT NULL,
-  contato VARCHAR(12) NOT NULL
+  contato VARCHAR(12) NOT NULL,
+  deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS entregabilidade(
@@ -34,6 +38,7 @@ CREATE TABLE IF NOT EXISTS entregabilidade(
     fk_usuario INT NOT NULL,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
     fk_loja INT NOT NULL,
+    deletado_em DATE,
     FOREIGN KEY (fk_loja) REFERENCES loja(id_loja)
 );
 
@@ -44,7 +49,8 @@ CREATE TABLE IF NOT EXISTS endereco(
     numero VARCHAR(10) NOT NULL,
     latitude VARCHAR(7) NULL,
     longitude VARCHAR(7) NULL,
-    complemento VARCHAR(50) NULL
+    complemento VARCHAR(50) NULL,
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS enderecamento(
@@ -52,7 +58,8 @@ CREATE TABLE IF NOT EXISTS enderecamento(
     fk_usuario INT NOT NULL,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
     fk_loja INT NOT NULL,
-    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja)
+    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja),
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS desconto(
@@ -60,7 +67,8 @@ CREATE TABLE IF NOT EXISTS desconto(
     porcentagem INT NOT NULL,
     tipo VARCHAR(1),
     quant_maxima_uso INT NOT NULL,
-    codigo VARCHAR(5) NOT NULL
+    codigo VARCHAR(5) NOT NULL,
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS produto(
@@ -69,7 +77,8 @@ CREATE TABLE IF NOT EXISTS produto(
     descricao VARCHAR(500) NOT NULL,
     valor FLOAT NOT NULL,
     fk_loja INT NOT NULL,
-    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja)
+    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja),
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS pedido(
@@ -81,14 +90,16 @@ CREATE TABLE IF NOT EXISTS pedido(
 	status VARCHAR(2) NOT NULL,
     FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
     fk_desconto INT NULL,
-    FOREIGN KEY (fk_desconto) REFERENCES desconto(id_desconto)
+    FOREIGN KEY (fk_desconto) REFERENCES desconto(id_desconto),
+    deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS item_pedido(
     id_item_pedido SERIAL PRIMARY KEY NOT NULL,
     fk_pedido INT NOT NULL,
     FOREIGN KEY (fk_pedido) REFERENCES pedido(id_pedido),
-	fk_produto INT NOT NULL,
+    fk_produto INT NOT NULL,
+    deletado_em DATE,
     FOREIGN KEY (fk_produto) REFERENCES produto(id_produto)
 );
 
@@ -97,6 +108,7 @@ CREATE TABLE IF NOT EXISTS combo(
     fk_produto INT NOT NULL,
     FOREIGN KEY (fk_produto) REFERENCES produto(id_produto),
     fk_produto_combo INT NOT NULL,
+    deletado_em DATE,
     FOREIGN KEY (fk_produto_combo) REFERENCES produto(id_produto)
 );
 
@@ -382,3 +394,54 @@ BEGIN
 	UPDATE pedido pd SET pd.valor_liquido = valor_liquido;
 END;
 $atualiza_valor_pedido$ LANGUAGE plpgsql;
+
+CREATE
+
+CREATE OR REPLACE FUNCTION ao_inves_deletar()
+RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE TG_TABLE_NAME SET deletado_em = CURRENT_DATE WHERE id = NEW.id;
+	RETURNS NEW;
+END
+$$ LANGUAGE 'plpgsql';
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON usuario
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON pedido 
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON item_pedido
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON loja 
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON combo
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON entregador
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON entregabilidade
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON endereco
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON enderecamento
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON cartao
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+
+
+CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON desconto 
+FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
