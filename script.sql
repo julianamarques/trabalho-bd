@@ -62,10 +62,12 @@ CREATE TABLE IF NOT EXISTS enderecamento(
     deletado_em DATE
 );
 
+CREATE TYPE TIPO_DESCONTO AS ENUM('percentagem', 'valor');
+
 CREATE TABLE IF NOT EXISTS desconto(
     id SERIAL PRIMARY KEY NOT NULL,
-    porcentagem INT NOT NULL,
-    tipo VARCHAR(1),
+    valor FLOAT NOT NULL,
+    tipo TIPO_DESCONTO DEFAULT 'percentagem',
     quant_maxima_uso INT NOT NULL,
     codigo VARCHAR(5) NOT NULL,
     deletado_em DATE
