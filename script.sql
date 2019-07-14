@@ -3,47 +3,47 @@
 --- BANCO ---
 
 CREATE TABLE IF NOT EXISTS usuario(
-    id_usuario SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     nome VARCHAR(200) NOT NULL,
     contato VARCHAR(12) NOT NULL,
     deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS cartao(
-    id_cartao SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     numero VARCHAR(16) NOT NULL,
     codigo VARCHAR(3) NOT NULL,
     bandeira VARCHAR(50) NOT NULL,
     fk_usuario INT NOT NULL,
     deletado_em DATE,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario)
+    FOREIGN KEY (fk_usuario) REFERENCES usuario(id)
 );
 
 CREATE TABLE IF NOT EXISTS loja(
-    id_loja SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     nome VARCHAR(50) NOT NULL,
     descricao VARCHAR(500) NOT NULL,
     deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS entregador(
-  id_entregador SERIAL PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   nome VARCHAR(50) NOT NULL,
   contato VARCHAR(12) NOT NULL,
   deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS entregabilidade(
-    id_entregabilidade SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     fk_usuario INT NOT NULL,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_usuario) REFERENCES usuario(id),
     fk_loja INT NOT NULL,
     deletado_em DATE,
-    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja)
+    FOREIGN KEY (fk_loja) REFERENCES loja(id)
 );
 
 CREATE TABLE IF NOT EXISTS endereco(
-    id_endereco SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     cep VARCHAR(9) NOT NULL,
     rua VARCHAR(100) NOT NULL,
     numero VARCHAR(10) NOT NULL,
@@ -54,16 +54,16 @@ CREATE TABLE IF NOT EXISTS endereco(
 );
 
 CREATE TABLE IF NOT EXISTS enderecamento(
-    id_enderecamento SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     fk_usuario INT NOT NULL,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_usuario) REFERENCES usuario(id),
     fk_loja INT NOT NULL,
-    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja),
+    FOREIGN KEY (fk_loja) REFERENCES loja(id),
     deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS desconto(
-    id_desconto SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     porcentagem INT NOT NULL,
     tipo VARCHAR(1),
     quant_maxima_uso INT NOT NULL,
@@ -72,44 +72,44 @@ CREATE TABLE IF NOT EXISTS desconto(
 );
 
 CREATE TABLE IF NOT EXISTS produto(
-    id_produto SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     nome VARCHAR(50) NOT NULL,
     descricao VARCHAR(500) NOT NULL,
     valor FLOAT NOT NULL,
     fk_loja INT NOT NULL,
-    FOREIGN KEY (fk_loja) REFERENCES loja(id_loja),
+    FOREIGN KEY (fk_loja) REFERENCES loja(id),
     deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS pedido(
-    id_pedido SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     data_pedido DATE NOT NULL,
     valor FLOAT NOT NULL,
     valor_liquido FLOAT NOT NULL,
     fk_usuario INT NOT NULL,
 	status VARCHAR(2) NOT NULL,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (fk_usuario) REFERENCES usuario(id),
     fk_desconto INT NULL,
-    FOREIGN KEY (fk_desconto) REFERENCES desconto(id_desconto),
+    FOREIGN KEY (fk_desconto) REFERENCES desconto(id),
     deletado_em DATE
 );
 
 CREATE TABLE IF NOT EXISTS item_pedido(
-    id_item_pedido SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     fk_pedido INT NOT NULL,
-    FOREIGN KEY (fk_pedido) REFERENCES pedido(id_pedido),
+    FOREIGN KEY (fk_pedido) REFERENCES pedido(id),
     fk_produto INT NOT NULL,
     deletado_em DATE,
-    FOREIGN KEY (fk_produto) REFERENCES produto(id_produto)
+    FOREIGN KEY (fk_produto) REFERENCES produto(id)
 );
 
 CREATE TABLE IF NOT EXISTS combo(
-    id_combo SERIAL PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     fk_produto INT NOT NULL,
-    FOREIGN KEY (fk_produto) REFERENCES produto(id_produto),
+    FOREIGN KEY (fk_produto) REFERENCES produto(id),
     fk_produto_combo INT NOT NULL,
     deletado_em DATE,
-    FOREIGN KEY (fk_produto_combo) REFERENCES produto(id_produto)
+    FOREIGN KEY (fk_produto_combo) REFERENCES produto(id)
 );
 
 --- FUNÇÕES E TRIGGERS ---
@@ -206,9 +206,9 @@ BEGIN
 END;
 $validar_cadastro_entregador$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION cadastrar_produto(nome TEXT, descricao TEXT, valor FLOAT, id_loja INT) RETURNS VOID AS $cadastrar_produto$
+CREATE OR REPLACE FUNCTION cadastrar_produto(nome TEXT, descricao TEXT, valor FLOAT, id INT) RETURNS VOID AS $cadastrar_produto$
 BEGIN
-	INSERT INTO produto VALUES(DEFAULT, nome, descricao, valor, id_loja);
+	INSERT INTO produto VALUES(DEFAULT, nome, descricao, valor, id);
 END;
 $cadastrar_produto$ LANGUAGE plpgsql;
 
@@ -226,7 +226,7 @@ BEGIN
 		RAISE EXCEPTION 'O produto não pode ser cadastrado sem um valor';
 	END IF;
 		
-	IF NEW.fk_loja NOT IN (SELECT id_loja FROM loja) THEN
+	IF NEW.fk_loja NOT IN (SELECT id FROM loja) THEN
 		RAISE EXCEPTION 'A loja informada não foi cadastrada';
 	END IF;
 		
@@ -240,9 +240,9 @@ BEGIN
 END;
 $validar_cadastro_produto$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION cadastrar_cartao(numero TEXT, codigo TEXT, bandeira TEXT, id_usuario INT) RETURNS VOID AS $cadastrar_cartao$
+CREATE OR REPLACE FUNCTION cadastrar_cartao(numero TEXT, codigo TEXT, bandeira TEXT, id INT) RETURNS VOID AS $cadastrar_cartao$
 BEGIN
-	INSERT INTO cartao VALUES(DEFAULT, numero, codigo, bandeira, id_usuario);
+	INSERT INTO cartao VALUES(DEFAULT, numero, codigo, bandeira, id);
 END;
 $cadastrar_cartao$ LANGUAGE plpgsql;
 
@@ -264,7 +264,7 @@ BEGIN
 		RAISE EXCEPTION 'O cartão não pode ser cadastrado sem uma bandeira';
 	END IF;
 		
-	IF NEW.fk_usuario NOT IN (SELECT id_usuario FROM usuario) THEN
+	IF NEW.fk_usuario NOT IN (SELECT id FROM usuario) THEN
 		RAISE EXCEPTION 'O usuario informado para o cadastro do cartão não é valido';
 	END IF;
 		
@@ -338,21 +338,21 @@ BEGIN
 END;
 $validar_cadastro_endereco$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION realizar_pedido(id_usuario INT) RETURNS VOID AS $realizar_pedido$
+CREATE OR REPLACE FUNCTION realizar_pedido(id INT) RETURNS VOID AS $realizar_pedido$
 BEGIN
-	INSERT INTO pedido(DEFAULT, CURRENT_DATE, 0, 0, id_usuario);
+	INSERT INTO pedido(DEFAULT, CURRENT_DATE, 0, 0, id);
 END;
 $realizar_pedido$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION adicionar_item_pedido(id_produto INT, id_pedido INT) RETURNS VOID AS $adicionar_item_pedido$
+CREATE OR REPLACE FUNCTION adicionar_item_pedido(id_pedido INT, id_produto INT) RETURNS VOID AS $adicionar_item_pedido$
 BEGIN
-	INSERT INTO item_pedido VALUES(DEFAULT, id_pedido, id_produto);
+	INSERT INTO item_pedido VALUES(DEFAULT, id, id);
 END;
 $adicionar_item_pedido$ LANGUAGE plpgsql;
 
 CREATE FUNCTION validar_adicionar_item_pedido() RETURNS TRIGGER AS $validar_adicionar_item_pedido$
 BEGIN
-	IF NEW.fk_pedido NOT IN (SELECT id_pedido FROM pedido) THEN
+	IF NEW.fk_pedido NOT IN (SELECT id FROM pedido) THEN
 		RAISE EXCEPTION	'Pedido não cadastrado';
 	END IF;
 	
@@ -364,7 +364,7 @@ BEGIN
 		RAISE EXCEPTION 'O item deve ter o produto associado';
 	END IF;
 	
-	IF NEW.fk_produto NOT IN (SELECT id_produto FROM produto) THEN
+	IF NEW.fk_produto NOT IN (SELECT id FROM produto) THEN
 		RAISE EXCEPTION 'Produto não cadastrado';
 	END IF;
 	
@@ -379,7 +379,7 @@ CREATE OR REPLACE FUNCTION get_valor_desconto(id_desconto INT, valor_liquido FLO
 DECLARE porcentagem INT;
 		valor FLOAT;
 BEGIN
-    EXECUTE 'SELECT valor FROM desconto d WHERE d.id_desconto = ' || id_desconto INTO porcentagem;
+    EXECUTE 'SELECT valor FROM desconto d WHERE d.id = ' || id_desconto INTO porcentagem;
 	valor := (valor_liquido * porcentagem) / 100;
 END;
 $get_valor_desconto$ LANGUAGE plpgsql;
