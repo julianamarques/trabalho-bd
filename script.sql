@@ -136,11 +136,11 @@ $cadastrar_usuario$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_usuario() RETURNS TRIGGER AS $validar_cadastro_usuario$
 BEGIN
-	IF NEW.nome = '' THEN
+	IF NEW.nome = '' or NEW.nome = NULL THEN
 		RAISE EXCEPTION 'O usuário não pode ser cadastrado sem nome';
 	END IF;
 		
-	IF NEW.contato = '' THEN
+	IF NEW.contato = '' OR NEW.contato = NULL THEN
 		RAISE EXCEPTION 'O usuario não pode ser cadastrado sem um contato';
 	END IF;
 
@@ -158,11 +158,11 @@ $cadastrar_loja$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_loja() RETURNS TRIGGER AS $validar_cadastro_loja$
 BEGIN 
-	IF NEW.nome = '' THEN
+	IF NEW.nome = '' or NEW.nome = NULL THEN
 		RAISE EXCEPTION 'A loja não pode ser cadastrada sem nome';
 	END IF;
 		
-	IF NEW.descricao = '' THEN
+	IF NEW.descricao = '' OR NEW.descricao = NULL THEN
 		RAISE EXCEPTION 'A loja não pode ser cadastrada sem desrição';
 	END IF;
 		
@@ -180,11 +180,11 @@ $cadastrar_entregador$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_entregador() RETURNS TRIGGER AS $validar_cadastro_entregador$
 BEGIN
-	IF NEW.nome = '' THEN
+	IF NEW.nome = '' or NEW.nome = NULL THEN
 		RAISE EXCEPTION 'O entregador não pode ser cadastrado sem nome';
 	END IF;
 		
-	IF NEW.contato = '' THEN
+	IF NEW.contato = '' or NEW.contato THEN
 		RAISE EXCEPTION 'O entregador não pode ser cadastrado sem contato';
 	END IF;
 	
@@ -236,7 +236,7 @@ $cadastrar_cartao$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_cartao() RETURNS TRIGGER AS $validar_cadastro_cartao$
 BEGIN
-	IF NEW.numero = '' THEN
+	IF NEW.numero = '' or NEW.numero = NULL THEN
 		RAISE EXCEPTION 'O cartão não pode ser cadastrado sem um número';
 	END IF;
 	
@@ -244,11 +244,11 @@ BEGIN
 		RAISE EXCEPTION 'Já existe um cartão com esse numero';
 	END IF;
 		
-	IF NEW.codigo = '' THEN
+	IF NEW.codigo = '' or NEW.condigo = NULL THEN
 		RAISE EXCEPTION 'O cartão não pode ser cadastrado sem um código';
 	END IF;
 		
-	IF NEW.bandeira = '' THEN
+	IF NEW.bandeira = '' or NEW.bandeira = NULL THEN
 		RAISE EXCEPTION 'O cartão não pode ser cadastrado sem uma bandeira';
 	END IF;
 		
@@ -278,7 +278,7 @@ BEGIN
 		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem porcentagem';
 	END IF;
 	
-	IF NEW.tipo = '' THEN
+	IF NEW.tipo = '' or NEW.tipo = NULL THEN
 		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem um tipo';
 	END IF;
 	
@@ -286,7 +286,7 @@ BEGIN
 		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem a quantidade maxima de uso';
 	END IF;
 	
-	IF NEW.codigo = '' THEN
+	IF NEW.codigo = '' or NEW.codigo = NULL THEN
 		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem um código';
 	END IF;
 	
@@ -308,15 +308,15 @@ $cadastrar_endereco$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_endereco() RETURNS TRIGGER AS $validar_cadastro_endereco$
 BEGIN
-	IF NEW.cep = '' THEN
+	IF NEW.cep = '' or NEW.cep = NULL THEN
 		RAISE EXCEPTION 'Um endereco não pode ser cadastrado sem um CEP';
 	END IF;
 	
-	IF NEW.rua = '' THEN
+	IF NEW.rua = '' or NEW.rua = NULL THEN
 		RAISE EXCEPTION 'Um endereco não pode ser cadastrado sem uma rua';
 	END IF;
 	
-	IF NEW.numero = '' THEN
+	IF NEW.numero = '' or NEW.numero = NULL THEN
 		RAISE EXCEPTION 'Um endereco não pode ser cadastrado sem um número';
 	END IF;
 	
