@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS desconto(
     valor FLOAT NOT NULL,
     tipo TIPO_DESCONTO DEFAULT 'percentagem',
     quant_maxima_uso INT NOT NULL,
-    codigo VARCHAR(5) NOT NULL,
+    codigo VARCHAR(8) NOT NULL UNIQUE,
     deletado_em DATE
 );
 
@@ -280,20 +280,17 @@ BEGIN
 END;
 $validar_cadastro_cartao$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION cadastrar_desconto(porcentagem INT, tipo TEXT, quant_maxima_uso INT, codigo TEXT) RETURNS VOID AS $cadastrar_desconto$
+CREATE OR REPLACE FUNCTION cadastrar_desconto(valor INT, tipo TIPO_DESCONTO, quant_maxima_uso INT, codigo TEXT) 
+RETURNS VOID AS $cadastrar_desconto$
 BEGIN
-	INSERT INTO desconto VALUES(DEFAULT, porcentagem, tipo, quant_maxima_uso, codigo);
+	INSERT INTO desconto VALUES(DEFAULT, valor, tipo, quant_maxima_uso, codigo);
 END;
 $cadastrar_desconto$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION validar_cadastro_desconto() RETURNS TRIGGER AS $validar_cadastro_desconto$
 BEGIN
-	IF NEW.porcentagem IS NULL THEN
-		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem porcentagem';
-	END IF;
-	
-	IF NEW.tipo = '' or NEW.tipo = NULL THEN
-		RAISE EXCEPTION 'O desconto não pode ser cadastrado sem um tipo';
+	IF NEW.valor IS NULL or NEW.valor = 0.0 THEN
+		RAISE EXCEPTION 'Valor de desconto é necessário';
 	END IF;
 	
 	IF NEW.quant_max_uso IS NULL THEN
@@ -313,6 +310,8 @@ BEGIN
 	RETURN NEW;
 END;
 $validar_cadastro_desconto$ LANGUAGE plpgsql;
+										   
+CREATE OR REPLACE FUNCTION adicionar_desconto(pedido_id INT, desconto_codigo varcha
 
 CREATE OR REPLACE FUNCTION cadastrar_endereco(cep TEXT, rua TEXT, numero TEXT, latitude TEXT, longitude TEXT, complemento TEXT) RETURNS VOID AS $cadastrar_endereco$
 BEGIN
@@ -447,3 +446,18 @@ FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
 
 CREATE TRIGGER gatilho_ao_deletar INSTEAD OF DELETE ON desconto 
 FOR EACH ROW EXECUTE PROCEDURE ao_inves_deletar();
+					      
+CREATE OR REPLACE FUNCTION adicionar_desconto(pedido_id INT, codigo_desconto VARCHAR)
+RETURNS VOID AS $$
+DECLARE
+	valor_desconto FLOAT;
+	tipo TIPO_DESCONTO;
+BEGIN
+	tipo, valor_desconto  := SELECT tipo, valor FROM desconto WHERE codigo = codigo_deconto;
+	IF TIPO = 'percentagem' THEN
+	 	UPDATE pedido SET valor_liquido = (valor * (0+valor_desconto)) WHERE id = pedido_id;
+	ELSE
+		UPDATE pedido SET valor_liquido = (valor - valor_desconto) WHERE id = pedido_id;
+	END IF;
+END
+$$ LANGUAGE 'plpgsql';
