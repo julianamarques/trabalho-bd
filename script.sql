@@ -590,3 +590,13 @@ BEGIN
 		RAISE EXCEPTION 'Produto não cadastrado'
 	END IF;
 $validar_adicionar_combo$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION ao_inves_deletar()
+RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE TG_TABLE_NAME SET data_desativacao = CURRENT_DATE, ativo = FALSE WHERE id = NEW.id;
+	RETURNS NEW;
+END
+$$ LANGUAGE 'plpgsql';
+		    							    
+							    
